@@ -2,73 +2,134 @@
 <html>
 <head>
   <title>Digital Clock + Alarm</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+  <script src="https://cdn.tailwindcss.com"></script> 
+</head> 
+ 
+<body id="body" class="bg-gray-900 flex items-center justify-center h-screen text-white transition"> 
+ 
+<div class="bg-gray-800 p-8 rounded-xl text-center shadow-lg w-80"> 
+ 
+  <h1 class="text-2xl font-bold mb-2">🕒 Digital Clock</h1> 
 
-<body class="bg-gray-900 flex items-center justify-center h-screen text-white">
+  <!-- DATE -->
+  <p id="date" class="text-sm text-gray-300 mb-3"></p>
+ 
+  <!-- CLOCK --> 
+  <div id="clock" class="text-4xl font-mono mb-6">00:00:00</div> 
+ 
+  <!-- ALARM INPUT --> 
+  <input  
+    type="time"  
+    id="alarmTime"  
+    class="text-black p-2 rounded w-full mb-4" 
+  > 
+ 
+  <!-- BUTTONS -->
+  <button  
+    onclick="setAlarm()"  
+    class="bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full mb-2" 
+  > 
+    Set Alarm 
+  </button> 
 
-<div class="bg-gray-800 p-8 rounded-xl text-center shadow-lg w-80">
+  <button  
+    onclick="clearAlarm()"  
+    class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 w-full mb-2" 
+  > 
+    Clear Alarm 
+  </button> 
 
-  <h1 class="text-2xl font-bold mb-4">🕒 Digital Clock</h1>
+  <button  
+    onclick="toggleTheme()"  
+    class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 w-full mb-2" 
+  > 
+    Toggle Theme 
+  </button> 
 
-  <!-- Clock -->
-  <div id="clock" class="text-4xl font-mono mb-6">00:00:00</div>
+  <button  
+    onclick="stopAlarm()"  
+    class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600 w-full" 
+  > 
+    Stop Alarm 
+  </button> 
+ 
+  <p id="status" class="mt-4 text-sm text-yellow-400"></p> 
+ 
+</div> 
 
-  <!-- Alarm Input -->
-  <input 
-    type="time" 
-    id="alarmTime" 
-    class="text-black p-2 rounded w-full mb-4"
-  >
+<!-- SOUND -->
+<audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+ 
+<script> 
+  let alarmTime = null; 
+  let isRinging = false;
 
-  <!-- Button -->
-  <button 
-    onclick="setAlarm()" 
-    class="bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full"
-  >
-    Set Alarm
-  </button>
+  // CLOCK FUNCTION 
+  function updateClock() { 
+    let now = new Date(); 
 
-  <p id="status" class="mt-4 text-sm text-yellow-400"></p>
+    let h = String(now.getHours()).padStart(2, '0'); 
+    let m = String(now.getMinutes()).padStart(2, '0'); 
+    let s = String(now.getSeconds()).padStart(2, '0'); 
 
-</div>
+    let currentTime = `${h}:${m}:${s}`; 
+    document.getElementById("clock").innerText = currentTime; 
 
-<script>
-  let alarmTime = null;
+    // DATE
+    document.getElementById("date").innerText = now.toDateString();
 
-  // CLOCK FUNCTION
-  function updateClock() {
-    let now = new Date();
+    // CHECK ALARM 
+    if (alarmTime === `${h}:${m}` && !isRinging) { 
+      document.getElementById("alarmSound").play();
+      document.getElementById("status").innerText = "⏰ Alarm Ringing!";
+      isRinging = true;
+    } 
+  } 
 
-    let h = String(now.getHours()).padStart(2, '0');
-    let m = String(now.getMinutes()).padStart(2, '0');
-    let s = String(now.getSeconds()).padStart(2, '0');
+  setInterval(updateClock, 1000); 
 
-    let currentTime = `${h}:${m}:${s}`;
-    document.getElementById("clock").innerText = currentTime;
+  // SET ALARM 
+  function setAlarm() { 
+    let input = document.getElementById("alarmTime").value; 
 
-    // CHECK ALARM
-    if (alarmTime === `${h}:${m}`) {
-      alert("⏰ Alarm Ringing!");
-      alarmTime = null;
-    }
+    if (!input) { 
+      alert("Please select time!"); 
+      return; 
+    } 
+
+    alarmTime = input; 
+    isRinging = false;
+    document.getElementById("status").innerText = "✅ Alarm set for " + input; 
+  } 
+
+  // CLEAR ALARM
+  function clearAlarm() {
+    alarmTime = null;
+    document.getElementById("status").innerText = "❌ Alarm cleared";
   }
 
-  setInterval(updateClock, 1000);
-
-  // SET ALARM
-  function setAlarm() {
-    let input = document.getElementById("alarmTime").value;
-
-    if (!input) {
-      alert("Please select time!");
-      return;
-    }
-
-    alarmTime = input;
-    document.getElementById("status").innerText = "Alarm set for " + input;
+  // STOP ALARM SOUND
+  function stopAlarm() {
+    let sound = document.getElementById("alarmSound");
+    sound.pause();
+    sound.currentTime = 0;
+    isRinging = false;
+    document.getElementById("status").innerText = "🔕 Alarm stopped";
   }
-</script>
 
-</body>
+  // THEME TOGGLE
+  function toggleTheme() {
+    let body = document.getElementById("body");
+
+    if (body.classList.contains("bg-gray-900")) {
+      body.classList.remove("bg-gray-900", "text-white");
+      body.classList.add("bg-white", "text-black");
+    } else {
+      body.classList.remove("bg-white", "text-black");
+      body.classList.add("bg-gray-900", "text-white");
+    }
+  }
+</script> 
+ 
+</body> 
 </html>
