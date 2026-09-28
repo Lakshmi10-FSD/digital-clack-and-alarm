@@ -4,132 +4,145 @@
   <title>Digital Clock + Alarm</title>
   <script src="https://cdn.tailwindcss.com"></script> 
 </head> 
- 
+
 <body id="body" class="bg-gray-900 flex items-center justify-center h-screen text-white transition"> 
- 
+
 <div class="bg-gray-800 p-8 rounded-xl text-center shadow-lg w-80"> 
- 
+
   <h1 class="text-2xl font-bold mb-2">🕒 Digital Clock</h1> 
 
   <!-- DATE -->
   <p id="date" class="text-sm text-gray-300 mb-3"></p>
- 
+
   <!-- CLOCK --> 
-  <div id="clock" class="text-4xl font-mono mb-6">00:00:00</div> 
- 
+  <div id="clock" class="text-4xl font-mono mb-2">00:00:00</div> 
+  <p id="format" class="text-xs text-gray-400 mb-4">24 Hour Format</p>
+
   <!-- ALARM INPUT --> 
   <input  
     type="time"  
     id="alarmTime"  
     class="text-black p-2 rounded w-full mb-4" 
   > 
- 
+
   <!-- BUTTONS -->
-  <button  
-    onclick="setAlarm()"  
-    class="bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full mb-2" 
-  > 
+  <button onclick="setAlarm()" class="bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full mb-2"> 
     Set Alarm 
   </button> 
 
-  <button  
-    onclick="clearAlarm()"  
-    class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 w-full mb-2" 
-  > 
+  <button onclick="clearAlarm()" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 w-full mb-2"> 
     Clear Alarm 
   </button> 
 
-  <button  
-    onclick="toggleTheme()"  
-    class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 w-full mb-2" 
-  > 
+  <button onclick="toggleFormat()" class="bg-purple-500 px-4 py-2 rounded hover:bg-purple-600 w-full mb-2"> 
+    Toggle 12/24 Hour 
+  </button> 
+
+  <button onclick="toggleTheme()" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 w-full mb-2"> 
     Toggle Theme 
   </button> 
 
-  <button  
-    onclick="stopAlarm()"  
-    class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600 w-full" 
-  > 
+  <button onclick="stopAlarm()" class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600 w-full"> 
     Stop Alarm 
   </button> 
- 
+
   <p id="status" class="mt-4 text-sm text-yellow-400"></p> 
- 
+
 </div> 
 
 <!-- SOUND -->
-<audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
- 
-<script> 
-  let alarmTime = null; 
+<audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio> 
+
+<script>  
+  let alarmTime = localStorage.getItem("alarmTime") || null;
   let isRinging = false;
+  let is24Hour = true;
 
-  // CLOCK FUNCTION 
-  function updateClock() { 
-    let now = new Date(); 
+  // CLOCK FUNCTION  
+  function updateClock() {  
+    let now = new Date();  
 
-    let h = String(now.getHours()).padStart(2, '0'); 
-    let m = String(now.getMinutes()).padStart(2, '0'); 
-    let s = String(now.getSeconds()).padStart(2, '0'); 
+    let h = now.getHours();
+    let m = String(now.getMinutes()).padStart(2, '0');  
+    let s = String(now.getSeconds()).padStart(2, '0');  
 
-    let currentTime = `${h}:${m}:${s}`; 
-    document.getElementById("clock").innerText = currentTime; 
+    let displayHour = h;
 
-    // DATE
-    document.getElementById("date").innerText = now.toDateString();
-
-    // CHECK ALARM 
-    if (alarmTime === `${h}:${m}` && !isRinging) { 
-      document.getElementById("alarmSound").play();
-      document.getElementById("status").innerText = "⏰ Alarm Ringing!";
-      isRinging = true;
-    } 
-  } 
-
-  setInterval(updateClock, 1000); 
-
-  // SET ALARM 
-  function setAlarm() { 
-    let input = document.getElementById("alarmTime").value; 
-
-    if (!input) { 
-      alert("Please select time!"); 
-      return; 
-    } 
-
-    alarmTime = input; 
-    isRinging = false;
-    document.getElementById("status").innerText = "✅ Alarm set for " + input; 
-  } 
-
-  // CLEAR ALARM
-  function clearAlarm() {
-    alarmTime = null;
-    document.getElementById("status").innerText = "❌ Alarm cleared";
-  }
-
-  // STOP ALARM SOUND
-  function stopAlarm() {
-    let sound = document.getElementById("alarmSound");
-    sound.pause();
-    sound.currentTime = 0;
-    isRinging = false;
-    document.getElementById("status").innerText = "🔕 Alarm stopped";
-  }
-
-  // THEME TOGGLE
-  function toggleTheme() {
-    let body = document.getElementById("body");
-
-    if (body.classList.contains("bg-gray-900")) {
-      body.classList.remove("bg-gray-900", "text-white");
-      body.classList.add("bg-white", "text-black");
+    if (!is24Hour) {
+      displayHour = h % 12 || 12;
+      displayHour = String(displayHour).padStart(2, '0');
     } else {
-      body.classList.remove("bg-white", "text-black");
-      body.classList.add("bg-gray-900", "text-white");
+      displayHour = String(h).padStart(2, '0');
     }
+
+    let currentTime = `${displayHour}:${m}:${s}`;  
+    document.getElementById("clock").innerText = currentTime;  
+
+    // DATE 
+    document.getElementById("date").innerText = now.toDateString(); 
+
+    // CHECK ALARM  
+    if (alarmTime === `${String(h).padStart(2,'0')}:${m}` && !isRinging) {  
+      let sound = document.getElementById("alarmSound");
+      sound.loop = true;
+      sound.play(); 
+      document.getElementById("status").innerText = "⏰ Alarm Ringing!"; 
+      isRinging = true; 
+    }  
+  }  
+
+  setInterval(updateClock, 1000);  
+
+  // SET ALARM  
+  function setAlarm() {  
+    let input = document.getElementById("alarmTime").value;  
+
+    if (!input) {  
+      alert("Please select time!");  
+      return;  
+    }  
+
+    alarmTime = input;  
+    localStorage.setItem("alarmTime", input);
+    isRinging = false; 
+    document.getElementById("status").innerText = "✅ Alarm set for " + input;  
+  }  
+
+  // CLEAR ALARM 
+  function clearAlarm() { 
+    alarmTime = null; 
+    localStorage.removeItem("alarmTime");
+    document.getElementById("status").innerText = "❌ Alarm cleared"; 
+  } 
+
+  // STOP ALARM SOUND 
+  function stopAlarm() { 
+    let sound = document.getElementById("alarmSound"); 
+    sound.pause(); 
+    sound.currentTime = 0; 
+    isRinging = false; 
+    document.getElementById("status").innerText = "🔕 Alarm stopped"; 
+  } 
+
+  // THEME TOGGLE 
+  function toggleTheme() { 
+    let body = document.getElementById("body"); 
+
+    if (body.classList.contains("bg-gray-900")) { 
+      body.classList.remove("bg-gray-900", "text-white"); 
+      body.classList.add("bg-white", "text-black"); 
+    } else { 
+      body.classList.remove("bg-white", "text-black"); 
+      body.classList.add("bg-gray-900", "text-white"); 
+    } 
+  } 
+
+  // 12/24 FORMAT TOGGLE
+  function toggleFormat() {
+    is24Hour = !is24Hour;
+    document.getElementById("format").innerText = is24Hour ? "24 Hour Format" : "12 Hour Format";
   }
-</script> 
- 
-</body> 
+</script>  
+
+</body>  
 </html>
