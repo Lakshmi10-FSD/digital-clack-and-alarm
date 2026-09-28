@@ -74,3 +74,4 @@ A clean UI with:
 * Better UI animations
 * Mobile app version
 
+update
