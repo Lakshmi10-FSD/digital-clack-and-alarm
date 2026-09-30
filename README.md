@@ -74,4 +74,11 @@ A clean UI with:
 * Better UI animations
 * Mobile app version
 
+---
+## Conclution
+
+A simple digital clock and alarm application built using HTML, Tailwind CSS, and JavaScript, featuring real-time updates and interactive controls.
+Demonstrates practical skills in DOM manipulation, time-based logic, and responsive UI design.
+
+
 
