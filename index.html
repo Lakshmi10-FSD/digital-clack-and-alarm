@@ -42,8 +42,13 @@
     Toggle Theme 
   </button> 
 
-  <button onclick="stopAlarm()" class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600 w-full"> 
+  <button onclick="stopAlarm()" class="bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600 w-full mb-2"> 
     Stop Alarm 
+  </button> 
+
+  <!-- ✅ NEW SNOOZE BUTTON -->
+  <button onclick="snoozeAlarm()" class="bg-indigo-500 px-4 py-2 rounded hover:bg-indigo-600 w-full"> 
+    Snooze 5 Min 
   </button> 
 
   <p id="status" class="mt-4 text-sm text-yellow-400"></p> 
@@ -51,98 +56,128 @@
 </div> 
 
 <!-- SOUND -->
-<audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio> 
+<audio id="alarmSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>  
+ 
+<script>   
+  let alarmTime = localStorage.getItem("alarmTime") || null; 
+  let snoozeTime = null; // ✅ NEW
+  let isRinging = false; 
+  let is24Hour = true; 
+ 
+  // CLOCK FUNCTION   
+  function updateClock() {   
+    let now = new Date();   
+ 
+    let h = now.getHours(); 
+    let m = String(now.getMinutes()).padStart(2, '0');   
+    let s = String(now.getSeconds()).padStart(2, '0');   
+ 
+    let displayHour = h; 
+ 
+    if (!is24Hour) { 
+      displayHour = h % 12 || 12; 
+      displayHour = String(displayHour).padStart(2, '0'); 
+    } else { 
+      displayHour = String(h).padStart(2, '0'); 
+    } 
+ 
+    let currentTime = `${displayHour}:${m}:${s}`;   
+    document.getElementById("clock").innerText = currentTime;   
+ 
+    // DATE  
+    document.getElementById("date").innerText = now.toDateString();  
+ 
+    // CURRENT TIME HH:MM
+    let currentHM = `${String(h).padStart(2,'0')}:${m}`;
 
-<script>  
-  let alarmTime = localStorage.getItem("alarmTime") || null;
-  let isRinging = false;
-  let is24Hour = true;
+    // CHECK ALARM + SNOOZE
+    if (
+      (alarmTime === currentHM || snoozeTime === currentHM) 
+      && !isRinging
+    ) {   
+      let sound = document.getElementById("alarmSound"); 
+      sound.loop = true; 
+      sound.play();  
+      document.getElementById("status").innerText = "⏰ Alarm Ringing!";  
+      isRinging = true;  
+    }   
+  }   
+ 
+  setInterval(updateClock, 1000);   
+ 
+  // SET ALARM   
+  function setAlarm() {   
+    let input = document.getElementById("alarmTime").value;   
+ 
+    if (!input) {   
+      alert("Please select time!");   
+      return;   
+    }   
+ 
+    alarmTime = input;   
+    snoozeTime = null; // ✅ reset snooze
+    localStorage.setItem("alarmTime", input); 
+    isRinging = false;  
+    document.getElementById("status").innerText = "✅ Alarm set for " + input;   
+  }   
+ 
+  // CLEAR ALARM  
+  function clearAlarm() {  
+    alarmTime = null;  
+    snoozeTime = null; // ✅ clear snooze also
+    localStorage.removeItem("alarmTime"); 
+    document.getElementById("status").innerText = "❌ Alarm cleared";  
+  }  
+ 
+  // STOP ALARM SOUND  
+  function stopAlarm() {  
+    let sound = document.getElementById("alarmSound");  
+    sound.pause();  
+    sound.currentTime = 0;  
+    isRinging = false;  
+    document.getElementById("status").innerText = "🔕 Alarm stopped";  
+  }  
 
-  // CLOCK FUNCTION  
-  function updateClock() {  
-    let now = new Date();  
-
-    let h = now.getHours();
-    let m = String(now.getMinutes()).padStart(2, '0');  
-    let s = String(now.getSeconds()).padStart(2, '0');  
-
-    let displayHour = h;
-
-    if (!is24Hour) {
-      displayHour = h % 12 || 12;
-      displayHour = String(displayHour).padStart(2, '0');
-    } else {
-      displayHour = String(h).padStart(2, '0');
+  // ✅ SNOOZE FUNCTION
+  function snoozeAlarm() {
+    if (!isRinging) {
+      alert("Alarm is not ringing!");
+      return;
     }
 
-    let currentTime = `${displayHour}:${m}:${s}`;  
-    document.getElementById("clock").innerText = currentTime;  
+    let now = new Date();
+    now.setMinutes(now.getMinutes() + 5);
 
-    // DATE 
-    document.getElementById("date").innerText = now.toDateString(); 
+    let h = String(now.getHours()).padStart(2, '0');
+    let m = String(now.getMinutes()).padStart(2, '0');
 
-    // CHECK ALARM  
-    if (alarmTime === `${String(h).padStart(2,'0')}:${m}` && !isRinging) {  
-      let sound = document.getElementById("alarmSound");
-      sound.loop = true;
-      sound.play(); 
-      document.getElementById("status").innerText = "⏰ Alarm Ringing!"; 
-      isRinging = true; 
-    }  
-  }  
+    snoozeTime = `${h}:${m}`;
 
-  setInterval(updateClock, 1000);  
+    stopAlarm();
 
-  // SET ALARM  
-  function setAlarm() {  
-    let input = document.getElementById("alarmTime").value;  
-
-    if (!input) {  
-      alert("Please select time!");  
-      return;  
-    }  
-
-    alarmTime = input;  
-    localStorage.setItem("alarmTime", input);
-    isRinging = false; 
-    document.getElementById("status").innerText = "✅ Alarm set for " + input;  
-  }  
-
-  // CLEAR ALARM 
-  function clearAlarm() { 
-    alarmTime = null; 
-    localStorage.removeItem("alarmTime");
-    document.getElementById("status").innerText = "❌ Alarm cleared"; 
-  } 
-
-  // STOP ALARM SOUND 
-  function stopAlarm() { 
-    let sound = document.getElementById("alarmSound"); 
-    sound.pause(); 
-    sound.currentTime = 0; 
-    isRinging = false; 
-    document.getElementById("status").innerText = "🔕 Alarm stopped"; 
-  } 
-
-  // THEME TOGGLE 
-  function toggleTheme() { 
-    let body = document.getElementById("body"); 
-
-    if (body.classList.contains("bg-gray-900")) { 
-      body.classList.remove("bg-gray-900", "text-white"); 
-      body.classList.add("bg-white", "text-black"); 
-    } else { 
-      body.classList.remove("bg-white", "text-black"); 
-      body.classList.add("bg-gray-900", "text-white"); 
-    } 
-  } 
-
-  // 12/24 FORMAT TOGGLE
-  function toggleFormat() {
-    is24Hour = !is24Hour;
-    document.getElementById("format").innerText = is24Hour ? "24 Hour Format" : "12 Hour Format";
+    document.getElementById("status").innerText =
+      "😴 Snoozed for 5 minutes (Next: " + snoozeTime + ")";
   }
-</script>  
-
-</body>  
+ 
+  // THEME TOGGLE  
+  function toggleTheme() {  
+    let body = document.getElementById("body");  
+ 
+    if (body.classList.contains("bg-gray-900")) {  
+      body.classList.remove("bg-gray-900", "text-white");  
+      body.classList.add("bg-white", "text-black");  
+    } else {  
+      body.classList.remove("bg-white", "text-black");  
+      body.classList.add("bg-gray-900", "text-white");  
+    }  
+  }  
+ 
+  // 12/24 FORMAT TOGGLE 
+  function toggleFormat() { 
+    is24Hour = !is24Hour; 
+    document.getElementById("format").innerText = is24Hour ? "24 Hour Format" : "12 Hour Format"; 
+  } 
+</script>   
+ 
+</body>   
 </html>
